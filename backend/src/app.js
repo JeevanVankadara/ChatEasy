@@ -9,6 +9,9 @@ import { connectDB } from './lib/db.js';
 const app = express();
 const port = process.env.PORT;
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use('/api/auth', authRoutes);
 
 app.listen(port, () => {
