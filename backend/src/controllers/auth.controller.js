@@ -122,4 +122,26 @@ const checkAuth = (req, res) => {
   }
 }
 
-export {logout, signup, login, updateProfile, checkAuth};
+const updatePassword = async(req, res) => {
+  const {oldPass, newPass} = req.body;
+  if(!oldPass || !newPass){
+    return res.status(400).json({message: 'All Passwords should be filled'});
+  }
+  const userId = req.user._id;
+
+  const presentUser = await User.findOne({_id: userId});
+
+  const result = await bcrypt.compare(oldPass, presentUser.password);
+
+  if(!result){
+    return res.status(400).json({message: 'Password you entered is not Matching'});
+  }
+  const salt = await bcrypt.genSalt(10);
+  const newHashPassword = await bcrypt.hash(newPass, salt);
+  
+  const updatingUser = await User.findByIdAndUpdate(userId, {password: newHashPassword}, {new:true});
+
+  res.status(200).json({message:"Password Updated"});
+}
+
+export {logout, signup, login, updateProfile, checkAuth, updatePassword};

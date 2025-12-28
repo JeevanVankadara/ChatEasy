@@ -1,10 +1,16 @@
 import React,{useState} from 'react'
 import { useAuthStore } from '../lib/useAuthStore'
-import {Camera, Mail, User} from 'lucide-react'
+import {Camera, Mail, User, Eye, Lock, EyeOff, Loader2} from 'lucide-react'
 
 const ProfilePage = () => {
-  const {authUser, profileUpdating, isUpdatingProfile} = useAuthStore();
+  const {authUser, profileUpdating, isUpdatingProfile, isPasswordUpdating, passwordUpdate} = useAuthStore();
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+
+  const [oldPass, setOldPass] = useState('');
+  const [newPass, setNewPass] = useState('');
 
   const handleImageUpload = async(e) => {
     const file = e.target.files[0];
@@ -19,6 +25,13 @@ const ProfilePage = () => {
       await profileUpdating({profilePic: base64ImgURL});
     }
     
+  }
+
+  function handlePasswordChange(e){
+    e.preventDefault();
+    passwordUpdate({oldPass, newPass});
+    setOldPass('');
+    setNewPass('');
   }
 
   return (
@@ -76,7 +89,7 @@ const ProfilePage = () => {
               <div className='space-y-3 text-sm'>
                 <div className='flex items-center justify-between py-2 border-b border-zinc-700'>
                   <span>Member Since</span>
-                  <span>{authUser.createdAt.split('T')[0]}</span>
+                  <span>{authUser.createdAt?.split('T')[0]}</span>
                 </div>
                 <div className='flex items-center justify-between py-2'>
                   <span>Account Status</span>
@@ -86,6 +99,77 @@ const ProfilePage = () => {
           </div>
 
         </div>
+
+        <form onSubmit={(e) => handlePasswordChange(e)} className='max-w-md mx-auto mt-10 p-6 bg-base-300 rounded-xl space-y-6'>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-medium">Old Password</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Lock className="size-5 text-base-content/40" />
+              </div>
+              <input
+                type={showOldPassword ? "text" : "password"}
+                className={`input input-bordered w-full pl-10`}
+                placeholder="••••••••"
+                value={oldPass}
+                onChange={(e) => setOldPass(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+              >
+                {showOldPassword ? (
+                  <EyeOff className="size-5 text-base-content/40" />
+                ) : (
+                  <Eye className="size-5 text-base-content/40" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="form-control mb-5">
+            <label className="label">
+              <span className="label-text font-medium">New Password</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Lock className="size-5 text-base-content/40" />
+              </div>
+              <input
+                type={showNewPassword ? "text" : "password"}
+                className={`input input-bordered w-full pl-10`}
+                placeholder="••••••••"
+                value={newPass}
+                onChange={(e) => setNewPass(e.target.value)}
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? (
+                  <EyeOff className="size-5 text-base-content/40" />
+                ) : (
+                  <Eye className="size-5 text-base-content/40" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" className="btn btn-primary w-full" disabled={isPasswordUpdating}>
+            {isPasswordUpdating ? (
+              <>
+                <Loader2 className="size-5 animate-spin" />
+                Updating...
+              </>
+            ) : (
+              "Update"
+            )}
+          </button>
+        </form>
 
       </div>
 
