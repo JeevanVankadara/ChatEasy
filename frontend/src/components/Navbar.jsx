@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAuthStore } from '../lib/useAuthStore.js';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import{MessageSquare, Settings, User, LogOut} from 'lucide-react';
 
 const Navbar = () => {
@@ -8,6 +8,7 @@ const Navbar = () => {
 
   function handleLogout(){
     logout();
+    Navigate("/");
   }
 
   return (
