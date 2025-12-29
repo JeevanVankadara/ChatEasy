@@ -8,6 +8,7 @@ const useMessagesStore = create((set, get) => ({
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  isMessageSending: false,
 
   setSelectedUser: (selectedUser) => set({selectedUser}),
 
@@ -37,11 +38,14 @@ const useMessagesStore = create((set, get) => ({
 
   sendMessage: async(data) => {
     const {messages, selectedUser} = get();
+    set({isMessageSending: true})
     try {
       const res = await axiosInstance.post(`/message/send/${selectedUser._id}`, data);
       set({messages: [...messages, res.data]});
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to send message');
+    } finally{
+      set({isMessageSending: false});
     }
   }
 

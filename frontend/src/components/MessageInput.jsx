@@ -7,7 +7,7 @@ const MessageInput = () => {
   const [text, setText] = useState('');
   const [image, setImage] = useState(null);
 
-  const {sendMessage} = useMessagesStore();
+  const {sendMessage, isMessageSending} = useMessagesStore();
 
   const fileInputRef = useRef(null);
 
@@ -97,7 +97,7 @@ const MessageInput = () => {
 
         <button className='btn -btn-sm btn-circle'
           type='submit'
-          disabled={!text.trim() && !image}
+          disabled={!text.trim() && !image || isMessageSending}
           >
           <Send size={22} />
         </button>
