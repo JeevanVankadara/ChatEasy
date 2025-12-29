@@ -39,25 +39,25 @@ export const sendMessage = async(req, res) => {
     const senderId = req.user._id;
     const {text, image} = req.body;
 
-    let imageURL;
+    let imageUrl;
 
     if(image){
       const uploadedResponse = await cloudinary.uploader.upload(image);
-      imageURL = uploadedResponse.secure_url;
+      imageUrl = uploadedResponse.secure_url;
     }
 
     const newMessage = new Messages({
       senderId,
       receiverId,
       text,
-      imageURL
+      image: imageUrl
     });
 
     await newMessage.save();
 
     //todo: socket.io pending here
 
-    res.status(200).json({newMessage});
+    res.status(200).json(newMessage);
 
   } catch (error) {
     console.log('Error in sending the message '+error);

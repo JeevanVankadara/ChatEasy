@@ -6,7 +6,7 @@ export const protectRoute = async(req, res, next) => {
     const token = req.cookies.jwt;
 
     if(!token){
-      res.status(401).json({message: 'No Token is present'});
+      return res.status(401).json({message: 'No Token is present'});
     }
 
     const decode = jwt.verify(token, process.env.JWT_SECRET);
@@ -24,7 +24,7 @@ export const protectRoute = async(req, res, next) => {
     next();
   } catch (error) {
     console.log('Error in authMiddleware '+ error);
-    res.status(500).json({message: 'Internal Server error at auth Middleware'});
+    return res.status(500).json({message: 'Internal Server error at auth Middleware'});
   }
 
 }
