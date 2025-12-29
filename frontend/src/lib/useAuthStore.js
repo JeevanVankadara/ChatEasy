@@ -10,6 +10,7 @@ export const useAuthStore = create((set) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   isPasswordUpdating: false,
+  isPasswordChangeStatus: false,
 
   checkAuth: async() => {
     try {
@@ -30,7 +31,7 @@ export const useAuthStore = create((set) => ({
       set({authUser: res.data});  
       toast.success('Account Created successfully');
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || 'Failed to create account');
     } finally{
       set({isSigningUp: false});
     }
@@ -42,7 +43,7 @@ export const useAuthStore = create((set) => ({
       set({authUser: res.data});
       toast.success('Login Successfully');
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || 'Failed to login');
     }finally{
       set({isLoggingIn: false});
     }
@@ -54,7 +55,7 @@ export const useAuthStore = create((set) => ({
       const res = await axiosInstance.post('auth/logout');
       toast.success('Logout Succesfully');
     }catch(error){
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || 'Failed to logout');
     }
   },
 
@@ -62,9 +63,10 @@ export const useAuthStore = create((set) => ({
     set({isUpdatingProfile: true});
     try {
       const res = await axiosInstance.put("auth/updateProfile", data);
+      set({authUser: res.data});
       toast.success('Profile Updated successfully');
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally{
       set({isUpdatingProfile: false});
     }
@@ -75,10 +77,14 @@ export const useAuthStore = create((set) => ({
     try {
       const res = await axiosInstance.put("auth/updatePassword", data);
       toast.success('Password Updated successfully');
+      set({isPasswordChangeStatus: true});
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || 'Failed to update password');
     } finally {
       set({isPasswordUpdating: false});
+      setTimeout(() => {
+        set({isPasswordChangeStatus: false});
+      }, 3000);
     }
   }
 
