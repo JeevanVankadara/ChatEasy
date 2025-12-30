@@ -15,7 +15,9 @@ import SettingsPage from './pages/SettingsPage'
 import {Toaster} from 'react-hot-toast'
 
 const App = () => {
-  const {authUser, checkAuth, isCheckingauth} = useAuthStore();
+  const {authUser, checkAuth, isCheckingauth, onlineUsers} = useAuthStore();
+
+  console.log(onlineUsers);
 
   useEffect(() => {
     checkAuth();
