@@ -69,6 +69,23 @@ const useMessagesStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
     if(!socket) return;
     socket.off("newMessage"); 
+  },
+
+  subscribeToNewUsers: () => {
+    const socket = useAuthStore.getState().socket;
+    
+    if(!socket) return;
+
+    socket.on("newUser", (newUser) => {
+      const {users} = get();
+      set({users: [...users, newUser]});
+    });
+  },
+
+  unSubscribeFromNewUsers: () => {
+    const socket = useAuthStore.getState().socket;
+    if(!socket) return;
+    socket.off("newUser");
   }
 
 }));

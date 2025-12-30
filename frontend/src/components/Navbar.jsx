@@ -27,11 +27,6 @@ const Navbar = () => {
           </div>
 
           <div className='flex items-center gap-2'>
-            <Link to={"/settings"} className='btn btn-sm gap-2 transition-all'>
-              <Settings className='w-4 h-4'/>
-              <span className='hidden sm-inline'>Settings</span>
-            </Link>
-
             {authUser && (
               <>
               <Link to={"/profile"} className='btn btn-sm gap-2'>

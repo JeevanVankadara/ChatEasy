@@ -10,7 +10,8 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import ProfilePage from './pages/ProfilePage'
-import SettingsPage from './pages/SettingsPage'
+import OtherProfile from './pages/OtherProfile'
+
 
 import {Toaster} from 'react-hot-toast'
 
@@ -39,8 +40,8 @@ const App = () => {
         <Route path='/' element = {authUser ? <HomePage /> : <Navigate to="/login" />} />
         <Route path='/login' element = {!authUser ? <LoginPage/> : <Navigate to="/" />} />
         <Route path='/signup' element = {!authUser ? <SignUpPage/> : <Navigate to="/" />} />
-        <Route path='/settings' element = {<SettingsPage/>} />
         <Route path='/profile' element = {authUser ? <ProfilePage/> : <Navigate to="/login" />} />
+        <Route path='/other-profile' element = {authUser ? <OtherProfile/> : <Navigate to="/login" />} />
       </Routes>
 
       <Toaster />
