@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: chateasy-backend
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        value: mongodb+srv://jeevanvankadara_db_user:iwhmHQNIJxal1wBw@cluster0.bu3rzce.mongodb.net/?appName=Cluster0
+      - key: JWT_SECRET
+        value: Bunnysunny
+      - key: CLOUDINARY_CLOUDNAME
+        value: dpkpdcuvy
+      - key: CLOUDINARY_API_KEY
+        value: 516629111161128
+      - key: CLOUDINARY_SECRET_KEY
+        value: ljQNTEt9-X4H_K5QKUiA5iSsXUA
+      - key: CLIENT_URL
+        sync: false
