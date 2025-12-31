@@ -1,27 +1,13 @@
 {
-  "name": "chateasy",
+  "name": "chat-easy",
   "version": "1.0.0",
-  "description": "A full-stack chat application",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "start": "cd backend && npm start",
-    "build": "cd frontend && npm run build",
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "install:backend": "cd backend && npm install",
-    "install:frontend": "cd frontend && npm install"
+    "build": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "npm run start --prefix backend"
   },
-  "keywords": [
-    "chat",
-    "socket.io",
-    "real-time",
-    "messaging"
-  ],
+  "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+  "license": "ISC"
 }
