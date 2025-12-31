@@ -24,9 +24,18 @@ app.use(cors({
 
 app.use('/api/auth', authRoutes);
 app.use('/api/message', messageRoutes);
-app.get('/', (req, res) => {
-  res.send('API is running...');
-});
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.use((req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running...');
+  });
+}
 
 io.on("connection", (socket) => {
   console.log('a user is connected ', socket.id);
@@ -45,14 +54,6 @@ io.on("connection", (socket) => {
     }
   });
 });
-
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
-  app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-  });
-}
 
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
