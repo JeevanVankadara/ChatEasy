@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { X, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "../lib/useAuthStore";
 import useMessagesStore from "../lib/useMessagesStore";
 import { Link } from "react-router-dom";
@@ -10,6 +10,14 @@ const ChatHeader = () => {
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
+        {/* Back button - visible only on mobile */}
+        <button
+          onClick={() => setSelectedUser(null)}
+          className="md:hidden mr-2 p-2 hover:bg-base-300 rounded-lg transition-colors"
+        >
+          <ArrowLeft className="size-5" />
+        </button>
+
         <Link to="/other-profile" className="flex items-center flex-1 gap-3">
           <div className="flex items-center gap-3 flex-1">
             {/* Avatar */}
@@ -30,10 +38,10 @@ const ChatHeader = () => {
         </Link>
 
 
-        {/* Close button */}
+        {/* Close button - visible only on desktop */}
         <button
           onClick={() => setSelectedUser(null)}
-          className="ml-4"
+          className="hidden md:block ml-4 p-2 hover:bg-base-300 rounded-lg transition-colors"
         >
           <X />
         </button>

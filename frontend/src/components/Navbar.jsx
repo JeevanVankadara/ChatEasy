@@ -29,14 +29,14 @@ const Navbar = () => {
           <div className='flex items-center gap-2'>
             {authUser && (
               <>
-              <Link to={"/profile"} className='btn btn-sm gap-2'>
+              <Link to="/profile" className='btn btn-sm gap-2 transition-all'>
                 <User className='size-5'/>
-                <span className='hidden sm-inline'>Profile</span>
+                <span className='hidden sm:inline'>Profile</span>
               </Link>
 
-              <button onClick={handleLogout}>
+              <button onClick={handleLogout} className='btn btn-sm gap-2 transition-all'>
                 <LogOut className='size-5' />
-                <span className='hidden sm-inline'>Logout</span>
+                <span className='hidden sm:inline'>Logout</span>
               </button>
               </>
             )} 

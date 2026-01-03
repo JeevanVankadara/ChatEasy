@@ -73,7 +73,7 @@ const MessageInput = () => {
       )}
 
       <form onSubmit={(e) => {forwardMessage(e)}} className='flex items-center gap-2'>
-        <div className='flex-1 flex gap-2'>
+        <div className='flex-1 flex items-center gap-2'>
           <input type="text" 
             className='w-full input input-bordered rounded-lg input-sm sm:input-md'
             placeholder='Type the message...'
@@ -88,14 +88,14 @@ const MessageInput = () => {
           />
 
           <button type='button'
-            className={`hidden sm:flex btn btn-circle ${image ? 'text-emerald-500' : 'text-zinc-400'}`}
+            className={`flex btn btn-circle btn-sm sm:btn-md ${image ? 'text-emerald-500' : 'text-zinc-400'}`}
             onClick={() => fileInputRef.current?.click()}
           >
             <Image size={20} />
           </button>
         </div>
 
-        <button className='btn -btn-sm btn-circle'
+        <button className='btn btn-sm sm:btn-md btn-circle'
           type='submit'
           disabled={!text.trim() && !image || isMessageSending}
           >
