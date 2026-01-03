@@ -163,29 +163,30 @@ const SignUpPage = () => {
           </div>
 
           {/* GOOGLE SIGNUP */}
-          <div className="w-full relative">
-            <GoogleLogin
-              onSuccess={(credentialResponse) => {
-                googleLogin(credentialResponse.credential);
-              }}
-              onError={() => {
-                toast.error("Google signup failed");
-              }}
-              render={(renderProps) => (
-                <button
-                  type="button"
-                  onClick={renderProps.onClick}
-                  disabled={renderProps.disabled || isSigningUp}
-                  className="btn btn-outline w-full gap-2 hover:bg-base-200 transition-colors group"
-                >
-                  <FcGoogle className="size-5" />
-                  <span className="text-sm sm:text-base font-medium">
-                    Continue with Google
-                  </span>
-                </button>
-              )}
-            />
+          <div className="w-full">
+            <div className="google-button-wrapper">
+              <GoogleLogin
+                onSuccess={(credentialResponse) => {
+                  googleLogin(credentialResponse.credential);
+                }}
+                onError={() => {
+                  toast.error("Google signup failed");
+                }}
+                theme="outline"
+                size="large"
+                text="signup_with"
+                shape="rectangular"
+              />
+            </div>
           </div>
+          <style jsx>{`
+            .google-button-wrapper :global(div) {
+              width: 100% !important;
+            }
+            .google-button-wrapper :global(iframe) {
+              width: 100% !important;
+            }
+          `}</style>
 
           <div className="text-center">
             <p className="text-base-content/60">
