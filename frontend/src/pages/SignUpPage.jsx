@@ -163,8 +163,9 @@ const SignUpPage = () => {
           </div>
 
           {/* GOOGLE SIGNUP */}
-          <div className="w-full">
-            <div id="google-signup-btn" className="w-full">
+          <div className="w-full flex justify-center relative">
+            {/* Hidden Google Login - handles OAuth */}
+            <div className="opacity-0 absolute pointer-events-auto" style={{width: '1px', height: '1px', overflow: 'hidden'}}>
               <GoogleLogin
                 onSuccess={(credentialResponse) => {
                   googleLogin(credentialResponse.credential);
@@ -172,25 +173,19 @@ const SignUpPage = () => {
                 onError={() => {
                   toast.error("Google signup failed");
                 }}
-                theme="outline"
-                size="large"
-                text="signup_with"
-                shape="rectangular"
-                logo_alignment="left"
               />
             </div>
+            {/* Visible Custom Button */}
+            <button
+              type="button"
+              onClick={() => document.querySelector('[aria-labelledby]')?.click()}
+              disabled={isSigningUp}
+              className="btn btn-circle btn-outline hover:bg-base-200 transition-colors border-2"
+              title="Continue with Google"
+            >
+              <FcGoogle className="size-6" />
+            </button>
           </div>
-          <style dangerouslySetInnerHTML={{__html: `
-            #google-signup-btn > div,
-            #google-signup-btn > div > div,
-            #google-signup-btn iframe {
-              width: 100% !important;
-              max-width: 100% !important;
-            }
-            #google-signup-btn {
-              width: 100%;
-            }
-          `}} />
 
           <div className="text-center">
             <p className="text-base-content/60">
