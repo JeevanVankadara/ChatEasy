@@ -3,6 +3,7 @@ import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
 import { io } from "../lib/socket.js";
+import { verifyGoogleToken } from "../lib/googleAuth.js";
 
 const signup = async (req, res) => {
   try {
@@ -161,4 +162,44 @@ const updatePassword = async (req, res) => {
   res.status(200).json({ message: "Password Updated" });
 };
 
-export { logout, signup, login, updateProfile, checkAuth, updatePassword };
+const googleLogin = async (req, res) => {
+  try {
+    const {token} = req.body;
+    if(!token){
+      return res.status(400).json({message: "Token is required"});
+    }
+    const payload = await verifyGoogleToken(token);
+    if(!payload.email_verified){
+      return res.status(400).json({message: "Email not verified"});
+    }
+    let user = await User.findOne({googleId: payload.sub});
+    if(!user){
+      user = await User.findOne({email: payload.email});
+      if(user){
+        user.googleId = payload.sub;
+        user.authProvider = "google";
+        await user.save();
+      }else{
+        user = await User.create({
+          fullName: payload.name || payload.given_name,
+          email: payload.email,
+          googleId: payload.sub,
+          authProvider: "google",
+          profilePic: payload.picture || ""
+        })
+      }
+    }
+    generateToken(user._id, res);
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic
+    });
+  }catch(error){
+    console.log("Error in Google Login: " + error);
+    res.status(500).json({message: "Internal Server Error"});
+  }
+}
+
+export { logout, signup, login, updateProfile, checkAuth, updatePassword, googleLogin };

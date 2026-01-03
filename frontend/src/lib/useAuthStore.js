@@ -2,6 +2,7 @@ import {axiosInstance} from "./axios.js";
 import {create} from "zustand";
 import {toast} from "react-hot-toast";
 import {io} from "socket.io-client";
+import { GoogleLogin } from "@react-oauth/google";
 
 const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:5001" : "/";
 
@@ -122,5 +123,18 @@ export const useAuthStore = create((set, get) => ({
       get().socket.disconnect();
     }
     set({socket: null});
+  },
+  googleLogin: async (googleToken) => {
+    set({ isLoggingIn: true });
+    try {
+      const res = await axiosInstance.post("auth/googleLogin", { token: googleToken });
+      set({ authUser: res.data });
+      toast.success("Login with Google successful");
+      get().connectSocket();  
+    }catch (error) {
+      toast.error(error.response?.data?.message || "Failed to login with Google");
+    } finally {
+      set({ isLoggingIn: false });
+    }
   }
 }));

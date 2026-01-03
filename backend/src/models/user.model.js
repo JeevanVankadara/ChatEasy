@@ -13,13 +13,23 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
     minlength: 6
   },
   profilePic: {
     type: String,
     default: ""
   },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  authProvider: {
+    type: String,
+    enum: ["local", "google"],
+    default: "local"
+  }
 },  {timestamps: true});
 
 const User = mongoose.model("User", userSchema);

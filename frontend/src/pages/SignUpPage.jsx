@@ -1,8 +1,17 @@
 import { useState } from "react";
+import { GoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
 import { useAuthStore } from "../lib/useAuthStore";
-import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare, User } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Lock,
+  Mail,
+  MessageSquare,
+  User
+} from "lucide-react";
 import { Link } from "react-router-dom";
-
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
 
@@ -11,48 +20,51 @@ const SignUpPage = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    password: "",
+    password: ""
   });
 
-  const { signup, isSigningUp } = useAuthStore();
+  const { signup, googleLogin, isSigningUp } = useAuthStore();
 
   const validateForm = () => {
-    if (!formData.fullName.trim()) return toast.error("Full name is required");
-    if (!formData.email.trim()) return toast.error("Email is required");
-    if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
-    if (!formData.password) return toast.error("Password is required");
-    if (formData.password.length < 6) return toast.error("Password must be at least 6 characters");
+    if (!formData.fullName.trim())
+      return toast.error("Full name is required");
+    if (!formData.email.trim())
+      return toast.error("Email is required");
+    if (!/\S+@\S+\.\S+/.test(formData.email))
+      return toast.error("Invalid email format");
+    if (!formData.password)
+      return toast.error("Password is required");
+    if (formData.password.length < 6)
+      return toast.error("Password must be at least 6 characters");
 
     return true;
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const success = validateForm();
-
     if (success === true) signup(formData);
   };
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
-      {/* left side */}
+      {/* LEFT SIDE */}
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
           {/* LOGO */}
           <div className="text-center mb-8">
             <div className="flex flex-col items-center gap-2 group">
-              <div
-                className="size-12 rounded-xl bg-primary/10 flex items-center justify-center 
-              group-hover:bg-primary/20 transition-colors"
-              >
+              <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <MessageSquare className="size-6 text-primary" />
               </div>
               <h1 className="text-2xl font-bold mt-2">Create Account</h1>
-              <p className="text-base-content/60">Get started with your free account</p>
+              <p className="text-base-content/60">
+                Get started with your free account
+              </p>
             </div>
           </div>
 
+          {/* EMAIL / PASSWORD SIGNUP */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="form-control">
               <label className="label">
@@ -64,10 +76,12 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type="text"
-                  className={`input input-bordered w-full pl-10`}
+                  className="input input-bordered w-full pl-10"
                   placeholder="John Doe"
                   value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -82,10 +96,12 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type="email"
-                  className={`input input-bordered w-full pl-10`}
+                  className="input input-bordered w-full pl-10"
                   placeholder="you@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -100,10 +116,12 @@ const SignUpPage = () => {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className={`input input-bordered w-full pl-10`}
+                  className="input input-bordered w-full pl-10"
                   placeholder="••••••••"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                 />
                 <button
                   type="button"
@@ -119,7 +137,11 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            <button type="submit" className="btn btn-primary w-full" disabled={isSigningUp}>
+            <button
+              type="submit"
+              className="btn btn-primary w-full"
+              disabled={isSigningUp}
+            >
               {isSigningUp ? (
                 <>
                   <Loader2 className="size-5 animate-spin" />
@@ -130,6 +152,40 @@ const SignUpPage = () => {
               )}
             </button>
           </form>
+
+          {/* DIVIDER */}
+          <div className="flex items-center gap-4">
+            <div className="flex-1 h-px bg-base-content/10"></div>
+            <span className="text-base-content/60 text-sm font-medium">
+              OR
+            </span>
+            <div className="flex-1 h-px bg-base-content/10"></div>
+          </div>
+
+          {/* GOOGLE SIGNUP */}
+          <div className="w-full relative">
+            <GoogleLogin
+              onSuccess={(credentialResponse) => {
+                googleLogin(credentialResponse.credential);
+              }}
+              onError={() => {
+                toast.error("Google signup failed");
+              }}
+              render={(renderProps) => (
+                <button
+                  type="button"
+                  onClick={renderProps.onClick}
+                  disabled={renderProps.disabled || isSigningUp}
+                  className="btn btn-outline w-full gap-2 hover:bg-base-200 transition-colors group"
+                >
+                  <FcGoogle className="size-5" />
+                  <span className="text-sm sm:text-base font-medium">
+                    Continue with Google
+                  </span>
+                </button>
+              )}
+            />
+          </div>
 
           <div className="text-center">
             <p className="text-base-content/60">
@@ -142,8 +198,7 @@ const SignUpPage = () => {
         </div>
       </div>
 
-      {/* right side */}
-
+      {/* RIGHT SIDE */}
       <AuthImagePattern
         title="Join our community"
         subtitle="Connect with friends, share moments, and stay in touch with your loved ones."
@@ -151,4 +206,5 @@ const SignUpPage = () => {
     </div>
   );
 };
+
 export default SignUpPage;
