@@ -115,7 +115,7 @@ const LoginPage = () => {
 
           {/* GOOGLE LOGIN */}
           <div className="w-full">
-            <div className="google-button-wrapper">
+            <div id="google-login-btn" className="w-full">
               <GoogleLogin
                 onSuccess={(credentialResponse) => {
                   googleLogin(credentialResponse.credential);
@@ -127,17 +127,21 @@ const LoginPage = () => {
                 size="large"
                 text="continue_with"
                 shape="rectangular"
+                logo_alignment="left"
               />
             </div>
           </div>
-          <style jsx>{`
-            .google-button-wrapper :global(div) {
+          <style dangerouslySetInnerHTML={{__html: `
+            #google-login-btn > div,
+            #google-login-btn > div > div,
+            #google-login-btn iframe {
               width: 100% !important;
+              max-width: 100% !important;
             }
-            .google-button-wrapper :global(iframe) {
-              width: 100% !important;
+            #google-login-btn {
+              width: 100%;
             }
-          `}</style>
+          `}} />
 
           <div className="text-center">
             <p className="text-base-content/60">

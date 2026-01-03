@@ -164,7 +164,7 @@ const SignUpPage = () => {
 
           {/* GOOGLE SIGNUP */}
           <div className="w-full">
-            <div className="google-button-wrapper">
+            <div id="google-signup-btn" className="w-full">
               <GoogleLogin
                 onSuccess={(credentialResponse) => {
                   googleLogin(credentialResponse.credential);
@@ -176,17 +176,21 @@ const SignUpPage = () => {
                 size="large"
                 text="signup_with"
                 shape="rectangular"
+                logo_alignment="left"
               />
             </div>
           </div>
-          <style jsx>{`
-            .google-button-wrapper :global(div) {
+          <style dangerouslySetInnerHTML={{__html: `
+            #google-signup-btn > div,
+            #google-signup-btn > div > div,
+            #google-signup-btn iframe {
               width: 100% !important;
+              max-width: 100% !important;
             }
-            .google-button-wrapper :global(iframe) {
-              width: 100% !important;
+            #google-signup-btn {
+              width: 100%;
             }
-          `}</style>
+          `}} />
 
           <div className="text-center">
             <p className="text-base-content/60">
