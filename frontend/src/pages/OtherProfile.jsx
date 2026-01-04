@@ -23,7 +23,7 @@ const ProfilePage = () => {
 
             <div className='flex flex-col gap-4 items-center'>
               <div className='relative'>
-                <img src={selectedUser.profilePic || "../../public/avatar.png"} alt={selectedUser.fullName}
+                <img src={selectedUser.profilePic || "avatar.png"} alt={selectedUser.fullName}
                   className='size-32 rounded-full object-cover border-4'
                 />
               </div>
