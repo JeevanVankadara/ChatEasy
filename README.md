@@ -14,6 +14,8 @@
 - **Axios** - Promise-based HTTP client
 - **React Router DOM** - Declarative routing for React applications
 - **React Hot Toast** - Beautiful notifications for React
+- **@react-oauth/google** - Google OAuth 2.0 authentication for React
+- **React Icons** - Icon library including Google icons
 
 ### Backend
 - **Node.js** - JavaScript runtime environment
@@ -24,6 +26,7 @@
 - **JWT (jsonwebtoken)** - Secure user authentication
 - **bcryptjs** - Password hashing library
 - **Cloudinary** - Cloud-based media storage and management
+- **google-auth-library** - Official Google authentication library for Node.js
 
 ### Styling & UI Components
 - **Tailwind CSS** - Utility-first CSS framework
@@ -42,6 +45,7 @@
 
 | Feature | Description |
 |---------|-------------|
+| **Google OAuth 2.0** | One-click login/signup with Google account |
 | **User Authentication** | Secure signup, login, and logout functionality |
 | **Real-time Messaging** | Instant message delivery using Socket.IO |
 | **Online User Presence** | See who's currently online in real-time |
@@ -118,6 +122,361 @@ Store in MongoDB
     ↓
 Display in Chat
 ```
+### 5️⃣ Google OAuth Flow
+```
+User Clicks "Continue with Google"
+    ↓
+Google OAuth Popup Opens
+    ↓
+User Selects Google Account
+    ↓
+Google Returns Credential Token
+    ↓
+Frontend Sends Token to Backend
+    ↓
+Backend Verifies Token with Google
+    ↓
+Extract User Info (email, name, picture)
+    ↓
+Check if User Exists in Database
+    ↓
+Create/Update User Record
+    ↓
+Generate JWT Token
+    ↓
+Set HTTP Cookie
+    ↓
+Connect Socket
+    ↓
+Redirect to Chat
+```
+
+---
+
+## 🔐 Google OAuth 2.0 Authentication
+
+ChatEasy implements secure Google OAuth 2.0 authentication, allowing users to sign up and log in instantly with their Google accounts.
+
+### Why Google OAuth?
+
+| Benefit | Description |
+|---------|-------------|
+| **Enhanced Security** | No password storage for Google users |
+| **Seamless UX** | One-click authentication without forms |
+| **Trusted Authentication** | Leverages Google's secure infrastructure |
+| **Auto Profile Data** | Gets user name and profile picture automatically |
+| **Email Verification** | Google accounts are pre-verified |
+
+---
+
+### Backend Implementation
+
+#### 1️⃣ Google Auth Library Setup
+> Location: `backend/src/lib/googleAuth.js`
+
+```javascript
+import { OAuth2Client } from "google-auth-library";
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export async function verifyGoogleToken(idToken) {
+  try {
+    // Verify the token with Google's servers
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    // Extract user payload from verified token
+    return ticket.getPayload();
+  } catch (error) {
+    console.error("Error verifying Google token:", error);
+    throw error;
+  }
+}
+```
+
+**What this does:**
+- Creates OAuth2Client with Google Client ID
+- Verifies the JWT token received from frontend
+- Ensures token is legitimate and not tampered with
+- Returns user information (email, name, picture, etc.)
+
+---
+
+#### 2️⃣ Google Login Controller
+> Location: `backend/src/controllers/auth.controller.js`
+
+```javascript
+const googleLogin = async (req, res) => {
+  try {
+    const {token} = req.body;
+    
+    // Validate token presence
+    if(!token){
+      return res.status(400).json({message: "Token is required"});
+    }
+    
+    // Verify token with Google
+    const payload = await verifyGoogleToken(token);
+    
+    // Ensure email is verified
+    if(!payload.email_verified){
+      return res.status(400).json({message: "Email not verified"});
+    }
+    
+    // Check if user exists with Google ID
+    let user = await User.findOne({googleId: payload.sub});
+    
+    if(!user){
+      // Check if user exists with same email (for account linking)
+      user = await User.findOne({email: payload.email});
+      
+      if(user){
+        // Link existing account with Google
+        user.googleId = payload.sub;
+        user.authProvider = "google";
+        await user.save();
+      } else {
+        // Create new user from Google profile
+        user = await User.create({
+          fullName: payload.name || payload.given_name,
+          email: payload.email,
+          googleId: payload.sub,
+          authProvider: "google",
+          profilePic: payload.picture || ""
+        });
+      }
+    }
+    
+    // Generate JWT and set cookie
+    generateToken(user._id, res);
+    
+    // Return user data
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic
+    });
+    
+  } catch(error){
+    console.log("Error in Google Login: " + error);
+    res.status(500).json({message: "Internal Server Error"});
+  }
+}
+```
+
+**Key Features:**
+- ✅ Token verification with Google
+- ✅ Email verification check
+- ✅ Account linking (existing email + Google)
+- ✅ Auto profile picture from Google
+- ✅ JWT generation for session management
+
+---
+
+#### 3️⃣ User Model with Google Support
+> Location: `backend/src/models/user.model.js`
+
+```javascript
+const userSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  fullName: {
+    type: String,
+    required: true,
+  },
+  password: {
+    type: String,
+    required: false,  // Optional for Google users
+    minlength: 6
+  },
+  profilePic: {
+    type: String,
+    default: ""
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true  // Allows null values while maintaining uniqueness
+  },
+  authProvider: {
+    type: String,
+    enum: ["local", "google"],
+    default: "local"
+  }
+}, {timestamps: true});
+```
+
+**Schema Features:**
+- `password` is optional (not required for Google users)
+- `googleId` uniquely identifies Google accounts
+- `authProvider` tracks authentication method
+- `sparse: true` allows users without Google ID
+
+---
+
+### Frontend Implementation
+
+#### 1️⃣ Google OAuth Provider Setup
+> Location: `frontend/src/main.jsx`
+
+```javascript
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+createRoot(document.getElementById("root")).render(
+  <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </GoogleOAuthProvider>
+);
+```
+
+**Purpose:**
+- Wraps entire app with Google OAuth context
+- Provides Google Client ID to all components
+- Enables Google authentication across the app
+
+---
+
+#### 2️⃣ Login Page Integration
+> Location: `frontend/src/pages/LoginPage.jsx`
+
+```javascript
+import { GoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
+
+const LoginPage = () => {
+  const { googleLogin } = useAuthStore();
+  
+  return (
+    <div>
+      {/* Hidden Google Login Component */}
+      <div style={{ display: 'none' }}>
+        <GoogleLogin
+          onSuccess={(credentialResponse) => {
+            googleLogin(credentialResponse.credential);
+          }}
+          onError={() => {
+            toast.error("Google login failed");
+          }}
+        />
+      </div>
+      
+      {/* Custom Google Login Button */}
+      <button
+        onClick={() => document.querySelector('[aria-labelledby]').click()}
+        className="btn btn-outline w-full"
+        title="Continue with Google"
+      >
+        <FcGoogle className="size-6" />
+        Continue with Google
+      </button>
+    </div>
+  );
+}
+```
+
+**Implementation Strategy:**
+- Hidden `<GoogleLogin>` component handles OAuth flow
+- Custom styled button triggers the hidden component
+- Maintains consistent UI/UX with app design
+- Shows loading states and error handling
+
+---
+
+#### 3️⃣ Zustand Google Login Action
+> Location: `frontend/src/lib/useAuthStore.js`
+
+```javascript
+googleLogin: async (token) => {
+  set({isLoggingIn: true});
+  try {
+    const res = await axiosInstance.post("/auth/googleLogin", {token});
+    set({authUser: res.data});
+    toast.success("Login Successful");
+    get().connectSocket();
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Google login failed");
+  } finally {
+    set({isLoggingIn: false});
+  }
+}
+```
+
+**Actions:**
+1. Set loading state
+2. Send Google token to backend
+3. Store authenticated user data
+4. Establish Socket.IO connection
+5. Handle errors gracefully
+
+---
+
+### Google OAuth Configuration
+
+#### Getting Google Client ID
+
+1. **Go to Google Cloud Console**
+   - Visit: https://console.cloud.google.com
+
+2. **Create New Project**
+   - Click "Select a project" → "New Project"
+   - Enter project name: "ChatEasy"
+
+3. **Enable Google+ API**
+   - Navigate to "APIs & Services" → "Library"
+   - Search for "Google+ API" and enable it
+
+4. **Create OAuth 2.0 Credentials**
+   - Go to "APIs & Services" → "Credentials"
+   - Click "Create Credentials" → "OAuth client ID"
+   - Application type: "Web application"
+   - Add authorized JavaScript origins:
+     - `http://localhost:5173` (development)
+     - Your production domain
+   - Add authorized redirect URIs:
+     - `http://localhost:5173` (development)
+     - Your production domain
+
+
+GOOGLE_CLIENT_ID=your_google_client_id
+```
+
+#### Frontend `.env`
+```env
+VITE_API_URL=http://localhost:5001
+VITE_GOOGLE_CLIENT_ID=your_google_client_id
+
+### Security Considerations
+
+| Security Feature | Implementation |
+|-----------------|----------------|
+| **Token Verification** | Backend verifies token with Google servers |
+| **Email Verification** | Only accepts verified Google emails |
+| **JWT Tokens** | Session management with HTTP-only cookies |
+| **No Password Storage** | Google users don't need passwords |
+| **Account Linking** | Prevents duplicate accounts with same email |
+| **Error Handling** | Graceful failures without exposing sensitive data |
+
+---
+
+### Google OAuth vs Traditional Auth
+
+| Aspect | Traditional Auth | Google OAuth |
+|--------|-----------------|--------------|
+| **Signup Time** | ~30 seconds (form filling) | ~2 seconds (one click) |
+| **Password** | User creates & remembers | Not needed |
+| **Email Verification** | Required | Pre-verified by Google |
+| **Profile Picture** | User uploads | Auto from Google |
+| **Security** | User's password strength | Google's security |
+| **User Experience** | Multiple steps | Single click |
+
 
 ---
 
@@ -195,7 +554,8 @@ unSubscribeFromNewUsers() // Remove new user listeners
 ---
 
 ### Zustand Advantages in This Project
-
+googleLogin` | Login/Signup with Google OAuth |
+| `POST` | `/api/auth/
 | Advantage | Benefit |
 |-----------|---------|
 | **Simple API** | No providers, reducers, or actions boilerplate |
